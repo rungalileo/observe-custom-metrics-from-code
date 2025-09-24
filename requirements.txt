@@ -1,0 +1,5 @@
+galileo 
+openai 
+python-dotenv 
+requests
+packaging
