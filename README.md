@@ -1,6 +1,6 @@
-# Galileo Session Metrics Demo
+# Galileo Custom Metrics Demo
 
-This demo shows how to fetch and display session metrics from the Galileo API after running LLM calls.
+This demo shows how to fetch and display custom metrics from the Galileo API after running LLM calls.
 
 ## Files
 
