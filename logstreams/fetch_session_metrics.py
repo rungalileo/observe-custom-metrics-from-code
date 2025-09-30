@@ -14,6 +14,62 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def get_project_id(project_name: str, api_key: Optional[str] = None, 
+                   api_url: Optional[str] = None) -> str:
+    """
+    Get project ID from project name.
+    
+    Args:
+        project_name (str): The project name
+        api_key (str, optional): Galileo API key. If not provided, uses GALILEO_API_KEY env var
+        api_url (str, optional): Galileo API URL. If not provided, uses GALILEO_API_URL env var
+        
+    Returns:
+        str: Project ID
+        
+    Raises:
+        ValueError: If project not found or required parameters are missing
+        requests.RequestException: If API request fails
+    """
+    # Get API key and URL from parameters or environment
+    if api_key is None:
+        api_key = os.environ.get("GALILEO_API_KEY")
+    if api_url is None:
+        api_url = os.environ.get("GALILEO_API_URL")
+    
+    if not api_key:
+        raise ValueError("GALILEO_API_KEY is required")
+    if not api_url:
+        raise ValueError("GALILEO_API_URL is required")
+    
+    # Construct API URL for projects search
+    url = f"{api_url}/v2/projects/paginated"
+    headers = {"Galileo-API-Key": api_key}
+    
+    # Search for project by name
+    payload = {
+        "filters": [
+            {
+                "name": "name",
+                "operator": "eq",
+                "value": project_name,
+                "case_sensitive": False
+            }
+        ]
+    }
+    
+    # Make API request
+    response = requests.post(url, headers=headers, json=payload, timeout=30)
+    response.raise_for_status()
+    data = response.json()
+    
+    projects = data.get("projects", [])
+    if not projects:
+        raise ValueError(f"Project '{project_name}' not found")
+    
+    return projects[0]["id"]
+
+
 def fetch_session_data(project_id: str, session_id: str, api_key: Optional[str] = None, 
                       api_url: Optional[str] = None) -> Dict[str, Any]:
     """
@@ -151,21 +207,32 @@ def print_metrics_summary(metrics_data: Dict[str, Any]) -> None:
                 print()
 
 
-def get_session_metrics(session_id: str, project_id: Optional[str] = None) -> Dict[str, Any]:
+def get_session_metrics(session_id: str, project_id: Optional[str] = None, 
+                       project_name: Optional[str] = None) -> Dict[str, Any]:
     """
     Get session metrics (simplified for demo - no polling).
     
     Args:
         session_id (str): The Galileo session ID
         project_id (str, optional): The Galileo project ID. If not provided, uses GALILEO_PROJECT_ID env var
+        project_name (str, optional): The Galileo project name. If not provided, uses GALILEO_PROJECT env var
         
     Returns:
         Dict[str, Any]: Organized metrics data
     """
     if project_id is None:
+        # Try to get project ID from environment variable first
         project_id = os.environ.get("GALILEO_PROJECT_ID")
+        
+        # If not found, try to get project ID from project name
         if not project_id:
-            raise ValueError("GALILEO_PROJECT_ID environment variable is required")
+            if project_name is None:
+                project_name = os.environ.get("GALILEO_PROJECT")
+            
+            if project_name:
+                project_id = get_project_id(project_name)
+            else:
+                raise ValueError("Either GALILEO_PROJECT_ID or GALILEO_PROJECT environment variable is required")
     
     session_data = fetch_session_data(project_id, session_id)
     return extract_all_metrics(session_data)
@@ -176,7 +243,7 @@ if __name__ == "__main__":
     import sys
     
     if len(sys.argv) != 2:
-        print("Usage: python fetch_metrics.py <session_id>")
+        print("Usage: python fetch_session_metrics.py <session_id>")
         sys.exit(1)
     
     session_id = sys.argv[1]

@@ -6,6 +6,7 @@ This demo shows how to fetch and display custom metrics from the Galileo API aft
 
 - **`logstreams/logstream_demo.py`** - Runs LLM calls with Galileo logging
 - **`logstreams/fetch_session_metrics.py`** - Fetches and displays session metrics
+- **`logstreams/fetch_logstream_metrics.py`** - Fetches and displays logstream metrics
 - **`experiments/create_dataset.py`** - Creates a dataset for legal advice detection testing
 - **`experiments/run_experiment.py`** - Runs an experiment using the dataset to test metrics
 - **`experiments/fetch_experiment.py`** - Fetches and displays experiment results by ID
@@ -44,7 +45,13 @@ python logstreams/logstream_demo.py
 
 ### Step 2: Fetch metrics (in another terminal or after waiting)
 ```bash
+# Fetch session metrics
 python logstreams/fetch_session_metrics.py <session_id>
+
+# Fetch logstream metrics (all sessions in a logstream)
+python logstreams/fetch_logstream_metrics.py
+# OR with explicit project and logstream names
+python logstreams/fetch_logstream_metrics.py "My Project" "My Logstream"
 ```
 
 ### Step 3: Create dataset for testing (optional)
@@ -73,6 +80,13 @@ python experiments/fetch_experiment.py <experiment_id>
 1. **Fetches session metrics** from Galileo API
 2. **Displays comprehensive metrics** from all levels (session, trace, span)
 3. **Shows custom metrics** like legal advice detection
+
+### `logstreams/fetch_logstream_metrics.py`:
+1. **Fetches all metrics for a logstream** using environment variables or explicit arguments
+2. **Uses sessions, traces, and spans search** with pagination to get complete data
+3. **Returns hierarchical JSON** with all sessions, traces, and spans in the logstream
+4. **Environment variables**: `GALILEO_PROJECT` and `GALILEO_LOG_STREAM`
+5. **Command-line usage**: `python fetch_logstream_metrics.py "Project Name" "Logstream Name"`
 
 ### `experiments/create_dataset.py`:
 1. **Creates a dataset** with legal advice input-output pairs

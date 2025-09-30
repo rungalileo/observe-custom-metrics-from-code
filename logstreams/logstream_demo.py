@@ -14,8 +14,6 @@ logger = galileo_context.get_logger_instance()
 # Start a session
 session_id=logger.start_session("Legal Advice Session")
 
-# Start a new trace
-logger.start_trace("Legal Advice Request")
 
 # Initialize the Galileo wrapped OpenAI client
 client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
